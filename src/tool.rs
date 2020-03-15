@@ -75,7 +75,7 @@ T: Write
     Ok(())
 }
 
-pub fn add_padding<T>(file: &mut T, pad_indication_number: u64) -> Result<(), IOError>
+/* pub fn add_padding<T>(file: &mut T, pad_indication_number: u64) -> Result<(), IOError>
 where T: Seek + Write {
     let remaining = pad_indication_number - file.seek(SeekFrom::Current(0))? % pad_indication_number;
     if remaining == pad_indication_number {
@@ -85,4 +85,4 @@ where T: Seek + Write {
         file.write(&[0])?;
     };
     Ok(())
-}
+} */

@@ -1,5 +1,5 @@
-use std::io::{Seek, SeekFrom};
-use pmd_flow::{FlowData, FlowDataValue};
+
+use pmd_flow::{FlowData};
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -8,7 +8,7 @@ fn main() {
     let input_file = File::open(&input_path).unwrap();
 
 
-    let mut flow = FlowData::new(input_file).unwrap();
+    let flow = FlowData::new(input_file).unwrap();
     //Some hacky hack...
     //let dic4 = flow.get_dictionary_mut(4).unwrap();
     //dic4.insert("to".into(), FlowDataValue::String("$0x572F".into()));
