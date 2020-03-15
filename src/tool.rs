@@ -41,11 +41,10 @@ where
 
 pub fn write_sir0_footer<T>(file: &mut T, dic: Vec<u32>) -> Result<(), IOError>
 where
-T: Write
+    T: Write,
 {
     let mut latest_written_pointer = 0;
     for original_to_write in dic {
-
         let mut remaining_to_write = original_to_write - latest_written_pointer;
         latest_written_pointer = original_to_write;
         let mut reversed_to_write = Vec::new();
@@ -70,8 +69,8 @@ T: Write
             } else {
                 file.write(&[value_to_write + 0b10000000])?;
             }
-        };
-    };
+        }
+    }
     Ok(())
 }
 

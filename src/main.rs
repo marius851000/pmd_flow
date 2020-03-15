@@ -1,12 +1,10 @@
-
-use pmd_flow::{FlowData};
+use pmd_flow::FlowData;
 use std::fs::File;
 use std::path::PathBuf;
 
 fn main() {
     let input_path = PathBuf::from("./script_flow_data_us.bin");
     let input_file = File::open(&input_path).unwrap();
-
 
     let flow = FlowData::new(input_file).unwrap();
     //Some hacky hack...
