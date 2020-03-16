@@ -326,40 +326,11 @@ impl FlowData {
         //if set to true, it will compare some value (mainly the size of the part) to the file script_flow_data_us.bin in the EU version of the game
         const COMPARE: bool = false;
 
-        let mut sir0_pointers = Vec::new();
+
+        let mut sir0_pointers = vec![4, 8, 20, 28, 36, 40, 44, 48];
+        //write the header. most of the info will be filed at the end
         file.write(&[b'S', b'I', b'R', b'0'])?;
-        sir0_pointers.push(4);
-        // 0x4: content_data_ptr, always 16 (post SIR0 header)
-        file.write(&u32::to_le_bytes(16))?;
-        sir0_pointers.push(8);
-        // 0x8: pointer to the sir0 part of the file, unknown as of now
-        file.write(&[0; 4])?; //TODO:r
-        file.write(&[0; 4])?;
-        // content_data_ptr
-        // info_ptr
-        file.write(&[0; 4])?; //TODO:r
-        sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-        // dic_count
-        file.write(&u32::to_le_bytes(self.dictionary_len() as u32))?;
-        // dic_section_ptr
-        file.write(&[0; 4])?; //TODO:r
-        sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-        // vec_count
-        file.write(&u32::to_le_bytes(self.vector_len() as u32))?;
-        // vec_section_ptr
-        file.write(&[0; 4])?; //TODO:r
-        sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-        // strptr_section_ptr
-        file.write(&[0; 4])?; //TODO:r
-        sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-        // val_section_ptr
-        file.write(&[0; 4])?; //TODO:r
-        sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-        // keyval_section_ptr
-        file.write(&[0; 4])?; //TODO:r
-        sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-        // another unknown ? undocumented
-        file.write(&[0; 4])?; //TODO:r
+        file.write(&[0; 48])?;
 
         let mut unique_data = HashMap::new();
         let mut unique_data_vec = Vec::new();
@@ -531,7 +502,7 @@ impl FlowData {
         }
 
         //TODO: strange. investigate (maybe padding)
-        file.write(&[0, 0])?;
+        file.write(&[0; 2])?;
 
         // strings
         let string_data_offset = file.seek(SeekFrom::Current(0))?;
