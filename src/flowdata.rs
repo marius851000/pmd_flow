@@ -43,6 +43,29 @@ pub enum FlowDataValue {
     RefVec(u16),
 }
 
+impl FlowDataValue {
+    pub fn get_string(&self) -> Option<String> {
+        match self {
+            Self::String(str) => Some(str.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn get_vecid(&self) -> Option<usize> {
+        match self {
+            Self::RefVec(vecid) => Some(*vecid as usize),
+            _ => None,
+        }
+    }
+
+    pub fn get_dicid(&self) -> Option<usize> {
+        match self {
+            Self::RefDic(dicid) => Some(*dicid as usize),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct FlowData {
     // imperative
@@ -325,7 +348,6 @@ impl FlowData {
     pub fn write<T: Write + Seek>(&self, mut file: &mut T) -> Result<(), FlowDataError> {
         //if set to true, it will compare some value (mainly the size of the part) to the file script_flow_data_us.bin in the EU version of the game
         const COMPARE: bool = false;
-
 
         let mut sir0_pointers = vec![4, 8, 20, 28, 36, 40, 44, 48];
         //write the header. most of the info will be filed at the end
