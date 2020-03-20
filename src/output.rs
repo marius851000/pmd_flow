@@ -921,7 +921,13 @@ impl FlowDataOutput {
         FlowDataOutput { output }
     }
     pub fn generate_flowdata(&self) -> FlowData {
+        // those first vec/dic are placed somewhere with limited storage
         let mut result = FlowData::default();
+        let mut first_vec = Vec::new();
+        first_vec.push(FlowDataValue::String("".into()));
+        result.push_vector(first_vec).unwrap();
+        let mut first_dic = HashMap::new();
+        result.push_dictionary(first_dic).unwrap();
         self.output.generate(&mut result);
         result
     }
