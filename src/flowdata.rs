@@ -84,7 +84,7 @@ impl FlowData {
     pub fn push_dictionary(
         &mut self,
         values: HashMap<String, FlowDataValue>,
-    ) -> Result<(), FlowDataError> {
+    ) -> Result<u16, FlowDataError> {
         let actual_dictionary_id: u16 = self.dictionaries.len().try_into()?;
         let reference_self = FlowDataValue::RefDic(actual_dictionary_id);
         if let Some(value) = values.get("idname") {
@@ -108,10 +108,10 @@ impl FlowData {
             };
         }
         self.dictionaries.push(values);
-        Ok(())
+        Ok((self.dictionaries.len() - 1) as u16)
     }
 
-    pub fn push_vector(&mut self, values: Vec<FlowDataValue>) -> Result<(), FlowDataError> {
+    pub fn push_vector(&mut self, values: Vec<FlowDataValue>) -> Result<u16, FlowDataError> {
         let actual_dictionary_id: u16 = self.dictionaries.len().try_into()?;
         let reference_self = FlowDataValue::RefDic(actual_dictionary_id);
 
@@ -124,7 +124,7 @@ impl FlowData {
 
         self.vectors.push(values);
 
-        Ok(())
+        Ok((self.vectors.len() - 1) as u16)
     }
 
     pub fn dictionary_len(&self) -> usize {

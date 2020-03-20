@@ -1,0 +1,50 @@
+{
+	"output": [
+		{
+			"FollowGroup": {
+				"debug_groupname": "Main scenario",
+				"data": [
+					{
+						"Scenario": {
+							"flowtype": "normal",
+							"entry": [
+								"main01_konohoshiniikirumono01"
+							],
+							"comment": "",
+							"socket": {
+								"socket_in": {
+									"start": "$START"
+								},
+								"socket_out": {
+									"next": "$0x9340"
+								}
+							},
+							"debugname": "Personality quiz",
+							"debugmenu_tag": "system"
+						}
+					},
+					{
+						"Scenario": {
+							"flowtype": "normal",
+							"entry": [
+								"opdemo01"
+							],
+							"comment": "",
+							"socket": {
+								"socket_in": {
+									"start": "$0x9340"
+								},
+								"socket_out": {
+									"next": ""
+								}
+							},
+							"debugname": "Personality quiz",
+							"debugmenu_tag": "system"
+						}
+					}
+				],
+				"debugmenu_tag": ""
+			}
+		}
+	]
+}

@@ -51,6 +51,7 @@ pub struct Dungeon {
     party: Option<Vec<String>>,
     fixed_party_label: String,
     dungeon: String,
+    #[serde(default)]
     layout: Layout,
     floor: Floor,
     debugname: String,
@@ -73,13 +74,13 @@ impl Dungeon {
         );
         let party = match dic["party"] {
             FlowDataValue::String(_) => None,
-            FlowDataValue::RefVec(vecid) => Some (
+            FlowDataValue::RefVec(vecid) => Some(
                 source
-                .get_vector(vecid as usize)
-                .unwrap()
-                .iter()
-                .map(|x| x.get_string().unwrap())
-                .collect()
+                    .get_vector(vecid as usize)
+                    .unwrap()
+                    .iter()
+                    .map(|x| x.get_string().unwrap())
+                    .collect(),
             ),
             _ => panic!(),
         };
@@ -111,6 +112,7 @@ pub struct AskSave {
     comment: String,
     r#type: String,
     socket: FollowSocket,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     debugmenu_tag: String,
@@ -149,6 +151,7 @@ pub struct FreeMoveEvent {
     comment: String,
     socket: FollowSocket,
     event_type: String,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     debugmenu_tag: String,
@@ -186,6 +189,7 @@ impl FreeMoveEvent {
 pub struct DungeonEnd {
     comment: String,
     socket: FollowSocket,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     debugmenu_tag: String,
@@ -221,6 +225,7 @@ impl DungeonEnd {
 pub struct FollowGroup {
     debug_groupname: String,
     data: Follow,
+    #[serde(default)]
     layout: Layout,
     debugmenu_tag: String,
 }
@@ -243,9 +248,18 @@ impl FollowGroup {
             debugmenu_tag,
         }
     }
+
+    fn generate(&self, dest: &mut FlowData) -> u16 {
+        let mut dic = HashMap::new();
+        dic.insert("debug_groupname".to_string(), FlowDataValue::String(self.debug_groupname.clone()));
+        dic.insert("data".into(), FlowDataValue::RefVec(self.data.generate(dest)));
+        dic.insert("layout".into(), FlowDataValue::RefDic(self.layout.generate(dest)));
+        dic.insert("debugmenu_tag".to_string(), FlowDataValue::String(self.debugmenu_tag.clone()));
+        dest.push_dictionary(dic).unwrap()
+    }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Layout {
     line_break: bool,
     h: i64,
@@ -270,6 +284,21 @@ impl Layout {
             x: pos_dic["posX"].get_string().unwrap().parse().unwrap(),
         }
     }
+
+    fn generate(&self, dest: &mut FlowData) -> u16 {
+        let mut layout = HashMap::new();
+        let mut pos = HashMap::new();
+        pos.insert("posH".to_string(), FlowDataValue::String(format!("{}", self.h)));
+        pos.insert("posW".to_string(), FlowDataValue::String(format!("{}", self.w)));
+        pos.insert("posX".to_string(), FlowDataValue::String(format!("{}", self.x)));
+        layout.insert("layoutPos".into(), FlowDataValue::RefDic(dest.push_dictionary(pos).unwrap()));
+        layout.insert("lineBreak".into(), FlowDataValue::String(match self.line_break {
+            true => "True",
+            false => "False",
+        }.into()));
+
+        dest.push_dictionary(layout).unwrap()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -278,6 +307,7 @@ pub struct ScenarioWithBranch {
     comment: String,
     socket: FollowSocket,
     branch: Vec<String>,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     debugmenu_tag: String,
@@ -327,6 +357,7 @@ pub struct ScenarioWithProgNo {
     entry: Vec<String>,
     comment: String,
     socket: FollowSocket,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     timeline: Timeline,
@@ -384,6 +415,13 @@ impl Timeline {
         }
         Self { dic: new_dic }
     }
+    fn generate(&self, dest: &mut FlowData) -> u16 {
+        let mut dic = HashMap::new();
+        for key in self.dic.keys() {
+            dic.insert(key.clone(), FlowDataValue::String(self.dic[key].clone()));
+        }
+        dest.push_dictionary(dic).unwrap()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -398,6 +436,7 @@ pub struct FreeMove {
     follow_chara: Vec<String>,
     socket: FollowSocket,
     play_btn: String,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     timeline: Timeline,
@@ -466,6 +505,38 @@ impl FreeMove {
             debugmenu_tag,
         }
     }
+
+    fn generate(&self, dest: &mut FlowData) -> u16 {
+        let mut dic = HashMap::new();
+        let mut dic_start = HashMap::new();
+        dic_start.insert("map".into(), FlowDataValue::String(self.start_map.clone()));
+        dic_start.insert("continue".into(), FlowDataValue::String(self.start_continue.clone()));
+        dic_start.insert("place".into(), FlowDataValue::String(self.start_map.clone()));
+        dic.insert("start".into(), FlowDataValue::RefDic(dest.push_dictionary(dic_start).unwrap()));
+
+        dic.insert("comment".into(), FlowDataValue::String(self.comment.clone()));
+        dic.insert("scenarioProgressNo".into(), FlowDataValue::String(self.scenario_progress_no.clone()));
+
+        let mut dic_next_cond = HashMap::new();
+        dic_next_cond.insert("next".into(), FlowDataValue::String(self.next_cond_next.clone()));
+        dic_next_cond.insert("other".into(), FlowDataValue::String(self.next_cond_other.clone()));
+        dic.insert("next_cond".into(), FlowDataValue::RefDic(dest.push_dictionary(dic_next_cond).unwrap()));
+
+        let mut dic_follow_chara = HashMap::new();
+        for follow_chara_id in 0..3 {
+            dic_follow_chara.insert(format!("follow{}", follow_chara_id), FlowDataValue::String(self.follow_chara[follow_chara_id].clone()));
+        }
+        dic.insert("followChara".into(), FlowDataValue::RefDic(dest.push_dictionary(dic_follow_chara).unwrap()));
+
+        dic.insert("socket".into(), FlowDataValue::RefVec(self.socket.generate(dest)));
+        dic.insert("playBtn".into(), FlowDataValue::String(self.play_btn.clone()));
+        dic.insert("layout".into(), FlowDataValue::RefDic(self.layout.generate(dest)));
+        dic.insert("debugname".into(), FlowDataValue::String(self.debugname.clone()));
+        dic.insert("timeline".into(), FlowDataValue::RefDic(self.timeline.generate(dest)));
+        dic.insert("debugmenu_tag".into(), FlowDataValue::String(self.debugmenu_tag.clone()));
+
+        dest.push_dictionary(dic).unwrap()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -473,6 +544,7 @@ pub struct DgStagingPost {
     map: String,
     comment: String,
     socket: FollowSocket,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     timeline: Timeline,
@@ -518,6 +590,7 @@ pub struct DgFlowBranch {
     socket: FollowSocket,
     r#if: String,
     id: String,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     debugmenu_tag: String,
@@ -562,6 +635,7 @@ pub struct Scenario {
     entry: Vec<String>,
     comment: String,
     socket: FollowSocket,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     debugmenu_tag: String,
@@ -599,13 +673,30 @@ impl Scenario {
             debugmenu_tag,
         }
     }
+    fn generate(&self, dest: &mut FlowData) -> u16 {
+        let mut dic = HashMap::new();
+        dic.insert("flowtype".into(), FlowDataValue::String(self.flowtype.clone()));
+
+        let entrys = self.entry.iter().map(|x| FlowDataValue::String(x.clone())).collect();
+        dic.insert("entry".into(), FlowDataValue::RefVec(dest.push_vector(entrys).unwrap()));
+
+        dic.insert("comment".into(), FlowDataValue::String(self.comment.clone()));
+        dic.insert("socket".into(), FlowDataValue::RefVec(self.socket.generate(dest)));
+        dic.insert("layout".into(), FlowDataValue::RefDic(self.layout.generate(dest)));
+        dic.insert("debugname".into(), FlowDataValue::String(self.debugname.clone()));
+        dic.insert("debugmenu_tag".into(), FlowDataValue::String(self.debugmenu_tag.clone()));
+
+        dest.push_dictionary(dic).unwrap()
+    }
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DgFlowBranchSetCounter {
     comment: String,
     count: String,
     socket: FollowSocket,
     id: String,
+    #[serde(default)]
     layout: Layout,
     debugname: String,
     debugmenu_tag: String,
@@ -645,7 +736,7 @@ fn follow_incoming_link(
     tempory: &mut FlowDataTempory,
     dicid: usize,
     parent_dicid: usize,
-    valid_in_label: &[&str],
+    _valid_in_label: &[&str],
 ) -> HashMap<String, HashMap<String, String>> {
     let dic = source.get_dictionary(dicid).unwrap();
     let idn = dic["idname"].get_string().unwrap();
@@ -664,10 +755,10 @@ fn follow_incoming_link(
 
 fn follow_outgoing_link(
     source: &FlowData,
-    tempory: &mut FlowDataTempory,
+    _tempory: &mut FlowDataTempory,
     dicid: usize,
-    parent_dicid: usize,
-    valid_out_label: &[&str],
+    _parent_dicid: usize,
+    _valid_out_label: &[&str],
 ) -> HashMap<String, String> {
     let dic = source.get_dictionary(dicid).unwrap();
     let label = dic["out"].get_string().unwrap();
@@ -721,11 +812,26 @@ impl FollowSocket {
             socket_out,
         }
     }
+
+    fn generate(&self, dest: &mut FlowData) -> u16 {
+        let mut vec = Vec::new();
+        for socket_in in &self.socket_in {
+            let mut dic = HashMap::new();
+            dic.insert("idname".into(), FlowDataValue::String(socket_in.1.clone()));
+            dic.insert("in".into(), FlowDataValue::String(socket_in.0.clone()));
+            vec.push(FlowDataValue::RefDic(dest.push_dictionary(dic).unwrap()));
+        };
+        for socket_out in &self.socket_out {
+            let mut dic = HashMap::new();
+            dic.insert("to".into(), FlowDataValue::String(socket_out.1.clone()));
+            dic.insert("out".into(), FlowDataValue::String(socket_out.0.clone()));
+            vec.push(FlowDataValue::RefDic(dest.push_dictionary(dic).unwrap()));
+        };
+        dest.push_vector(vec).unwrap()
+    }
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Follow {
-    datas: Vec<OutputEnum>,
-}
+pub struct Follow(Vec<OutputEnum>);
 
 impl Follow {
     fn new(source: &FlowData, tempory: &mut FlowDataTempory, top_vec: &Vec<FlowDataValue>) -> Self {
@@ -766,9 +872,9 @@ impl Follow {
                     "ScenarioWithProgNo" => OutputEnum::ScenarioWithProgNo(
                         ScenarioWithProgNo::new(source, tempory, dicid),
                     ),
-                    "FreeMoveEvent" => OutputEnum::FreeMoveEvent(
-                        FreeMoveEvent::new(source, tempory, dicid),
-                    ),
+                    "FreeMoveEvent" => {
+                        OutputEnum::FreeMoveEvent(FreeMoveEvent::new(source, tempory, dicid))
+                    }
                     unreconized => panic!("unreconized value: {:?}", unreconized),
                 };
                 println!("{:?}", to_add);
@@ -777,7 +883,23 @@ impl Follow {
                 panic!()
             }
         }
-        Self { datas }
+        Self(datas)
+    }
+
+    fn generate(&self, dest: &mut FlowData) -> u16 {
+        let mut datas = Vec::new();
+        for data in &self.0 {
+            let (reference, dicid) = match data {
+                OutputEnum::FollowGroup(group) => ("Group", group.generate(dest)),
+                OutputEnum::Scenario(scenario) => ("Scenario", scenario.generate(dest)),
+                OutputEnum::FreeMove(freemove) => ("FreeMove", freemove.generate(dest)),
+                unknown => panic!("cant generate {:?}", unknown),
+            };
+            let mut dic = HashMap::new();
+            dic.insert(reference.to_string(), FlowDataValue::RefDic(dicid));
+            datas.push(FlowDataValue::RefDic(dest.push_dictionary(dic).unwrap()));
+        }
+        dest.push_vector(datas).unwrap()
     }
 }
 
@@ -796,6 +918,11 @@ impl FlowDataOutput {
         let top_vec = source.get_vector(source.vector_len() - 1).unwrap();
         let mut tempory = FlowDataTempory::default();
         let output = Follow::new(&source, &mut tempory, top_vec);
-        FlowDataOutput {output}
+        FlowDataOutput { output }
+    }
+    pub fn generate_flowdata(&self) -> FlowData {
+        let mut result = FlowData::default();
+        self.output.generate(&mut result);
+        result
     }
 }
