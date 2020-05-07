@@ -1016,18 +1016,30 @@ struct FlowDataTempory {
     pub idname_set: HashMap<String, (String, usize)>,
 }
 
+/// A FlowData that can serialized and deserialized
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FlowDataOutput {
     output: Follow,
 }
 
 impl FlowDataOutput {
+    /// Create a new [`FlowDataOutput`] from a [`FlowData`]
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if anything in the FlowData is invalid
     pub fn new(source: FlowData) -> FlowDataOutput {
         let top_vec = source.get_vector(source.vector_len() - 1).unwrap();
         let mut tempory = FlowDataTempory::default();
         let output = Follow::new(&source, &mut tempory, top_vec);
         FlowDataOutput { output }
     }
+
+    /// Create a new [`FlowData`] from this struct
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the input file is invalid
     pub fn generate_flowdata(&self) -> FlowData {
         // those first vec/dic are placed somewhere with limited storage
         let mut result = FlowData::default();
