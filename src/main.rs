@@ -1,5 +1,4 @@
 use pmd_flow::FlowData;
-use pmd_flow::FlowDataOutput;
 use pmd_flow::FlowDataValue;
 
 use std::fs::File;

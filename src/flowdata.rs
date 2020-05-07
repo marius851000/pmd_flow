@@ -350,8 +350,8 @@ impl FlowData {
 
         let mut sir0_pointers = vec![4, 8, 20, 28, 36, 40, 44, 48];
         //write the header. most of the info will be filed at the end
-        file.write(&[b'S', b'I', b'R', b'0'])?;
-        file.write(&[0; 48])?;
+        file.write_all(&[b'S', b'I', b'R', b'0'])?;
+        file.write_all(&[0; 48])?;
 
         let mut unique_data = HashMap::new();
         let mut unique_data_vec = Vec::new();
@@ -420,20 +420,20 @@ impl FlowData {
             assert_eq!(dictionary_meta_offset, 52);
         }
         for _ in 0..self.dictionary_len() {
-            file.write(&[0; 4])?;
+            file.write_all(&[0; 4])?;
             sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-            file.write(&[0; 4])?;
+            file.write_all(&[0; 4])?;
         }
 
         // vector metadata
         let vector_meta_offset = file.seek(SeekFrom::Current(0))?;
         if COMPARE {
-            assert_eq!(vector_meta_offset, 65172);
+            assert_eq!(vector_meta_offset, 65_172);
         }
         for _ in 0..self.vector_len() {
-            file.write(&[0; 4])?;
+            file.write_all(&[0; 4])?;
             sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-            file.write(&[0; 4])?;
+            file.write_all(&[0; 4])?;
         }
 
         // value data (both from dictionary and vector)
@@ -445,16 +445,16 @@ impl FlowData {
         for data in unique_data_vec {
             match data {
                 FlowDataValue::String(str) => {
-                    file.write(&u16::to_le_bytes(0))?;
-                    file.write(&u16::to_le_bytes(strings[str].try_into()?))?;
+                    file.write_all(&u16::to_le_bytes(0))?;
+                    file.write_all(&u16::to_le_bytes(strings[str].try_into()?))?;
                 }
                 FlowDataValue::RefDic(refdic) => {
-                    file.write(&u16::to_le_bytes(1))?;
-                    file.write(&u16::to_le_bytes(*refdic))?;
+                    file.write_all(&u16::to_le_bytes(1))?;
+                    file.write_all(&u16::to_le_bytes(*refdic))?;
                 }
                 FlowDataValue::RefVec(refvec) => {
-                    file.write(&u16::to_le_bytes(2))?;
-                    file.write(&u16::to_le_bytes(*refvec))?;
+                    file.write_all(&u16::to_le_bytes(2))?;
+                    file.write_all(&u16::to_le_bytes(*refvec))?;
                 }
             }
         }
@@ -462,26 +462,26 @@ impl FlowData {
         // dic entries
         let entries_dictionary_offset = file.seek(SeekFrom::Current(0))?;
         if COMPARE {
-            assert_eq!(entries_dictionary_offset, 133244);
+            assert_eq!(entries_dictionary_offset, 133_244);
         }
         for (str, data) in unique_entries_dictionary_vec {
-            file.write(&u16::to_le_bytes(strings[str].try_into()?))?;
-            file.write(&u16::to_le_bytes(unique_data[data].try_into()?))?;
+            file.write_all(&u16::to_le_bytes(strings[str].try_into()?))?;
+            file.write_all(&u16::to_le_bytes(unique_data[data].try_into()?))?;
         }
 
         //additional information
         let additional_info_offset = file.seek(SeekFrom::Current(0))?;
         if COMPARE {
-            assert_eq!(additional_info_offset, 172544);
+            assert_eq!(additional_info_offset, 172_544);
         }
-        file.write(&[0; 4])?;
+        file.write_all(&[0; 4])?;
 
         // The first dictionary entrie... I have no idea why it's here, and not with the other
         let mut dictionary_metadata = Vec::new();
         let dic = self.get_dictionary(0).unwrap();
         dictionary_metadata.push((file.seek(SeekFrom::Current(0))?, dic.len()));
         for entry in dic {
-            file.write(&u16::to_le_bytes(
+            file.write_all(&u16::to_le_bytes(
                 unique_entries_dictionary[&entry].try_into()?,
             ))?;
         }
@@ -491,32 +491,32 @@ impl FlowData {
         let vec = self.get_vector(0).unwrap();
         vector_metadata.push((file.seek(SeekFrom::Current(0))?, vec.len()));
         for entry in vec {
-            file.write(&u16::to_le_bytes(unique_data[&entry].try_into()?))?;
+            file.write_all(&u16::to_le_bytes(unique_data[&entry].try_into()?))?;
         }
 
         // and an additional 0...
         //TODO: maybe padding
-        file.write(&[0; 2])?;
+        file.write_all(&[0; 2])?;
 
         // string reference:
         let strptr_offset = file.seek(SeekFrom::Current(0))?;
         if COMPARE {
-            assert_eq!(strptr_offset, 172556);
+            assert_eq!(strptr_offset, 172_556);
         }
         for _ in 0..strings.len() {
             sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
-            file.write(&[0; 4])?;
+            file.write_all(&[0; 4])?;
         }
 
         // dictionary entries
         if COMPARE {
-            assert_eq!(file.seek(SeekFrom::Current(0))?, 186060);
+            assert_eq!(file.seek(SeekFrom::Current(0))?, 186_060);
         }
         for dicid in 1..self.dictionary_len() {
             let dic = self.get_dictionary(dicid).unwrap();
             dictionary_metadata.push((file.seek(SeekFrom::Current(0))?, dic.len()));
             for entry in dic {
-                file.write(&u16::to_le_bytes(
+                file.write_all(&u16::to_le_bytes(
                     unique_entries_dictionary[&entry].try_into()?,
                 ))?;
             }
@@ -525,30 +525,30 @@ impl FlowData {
         // vector entries
         let vector_list_offset = file.seek(SeekFrom::Current(0))?;
         if COMPARE {
-            assert_eq!(vector_list_offset, 233016);
+            assert_eq!(vector_list_offset, 233_016);
         }
         for vecid in 1..self.vector_len() {
             let vec = self.get_vector(vecid).unwrap();
             vector_metadata.push((file.seek(SeekFrom::Current(0))?, vec.len()));
             for entry in vec {
-                file.write(&u16::to_le_bytes(unique_data[&entry].try_into()?))?;
+                file.write_all(&u16::to_le_bytes(unique_data[&entry].try_into()?))?;
             }
         }
 
         //TODO: strange. investigate (maybe padding)
-        file.write(&[0; 2])?;
+        file.write_all(&[0; 2])?;
 
         // strings
         let string_data_offset = file.seek(SeekFrom::Current(0))?;
         if COMPARE {
-            assert_eq!(string_data_offset, 243156);
+            assert_eq!(string_data_offset, 243_156);
         }
         let mut string_correspondance: HashMap<String, u32> = HashMap::new();
         for string in &strings_vec {
             string_correspondance
                 .insert(string.clone(), file.seek(SeekFrom::Current(0))?.try_into()?);
-            file.write(string.as_bytes())?;
-            file.write(&[0])?;
+            file.write_all(string.as_bytes())?;
+            file.write_all(&[0])?;
         }
 
         // pointer data
@@ -557,64 +557,64 @@ impl FlowData {
         // write string reference
         file.seek(SeekFrom::Start(strptr_offset))?;
         for str in strings_vec {
-            file.write(&u32::to_le_bytes(string_correspondance[&str]))?;
+            file.write_all(&u32::to_le_bytes(string_correspondance[&str]))?;
         }
 
         // write dictionary metadata
         file.seek(SeekFrom::Start(dictionary_meta_offset))?;
         for dic_meta in dictionary_metadata {
-            file.write(&u32::to_le_bytes(dic_meta.1.try_into()?))?;
-            file.write(&u32::to_le_bytes(dic_meta.0.try_into()?))?;
+            file.write_all(&u32::to_le_bytes(dic_meta.1.try_into()?))?;
+            file.write_all(&u32::to_le_bytes(dic_meta.0.try_into()?))?;
         }
 
         // write vector metadata
         file.seek(SeekFrom::Start(vector_meta_offset))?;
         for dic_meta in vector_metadata {
-            file.write(&u32::to_le_bytes(dic_meta.1.try_into()?))?;
-            file.write(&u32::to_le_bytes(dic_meta.0.try_into()?))?;
+            file.write_all(&u32::to_le_bytes(dic_meta.1.try_into()?))?;
+            file.write_all(&u32::to_le_bytes(dic_meta.0.try_into()?))?;
         }
 
         // write header entries
         file.seek(SeekFrom::Start(4))?;
-        file.write(&u32::to_le_bytes(16))?;
-        file.write(&u32::to_le_bytes(pointer_offset.try_into()?))?;
-        file.write(&[0; 4])?; //TODO: figure out what this is
+        file.write_all(&u32::to_le_bytes(16))?;
+        file.write_all(&u32::to_le_bytes(pointer_offset.try_into()?))?;
+        file.write_all(&[0; 4])?; //TODO: figure out what this is
                               // normal header
-        file.write(&u32::to_le_bytes(self.unknown1))?;
-        file.write(&u32::to_le_bytes(additional_info_offset.try_into()?))?;
+        file.write_all(&u32::to_le_bytes(self.unknown1))?;
+        file.write_all(&u32::to_le_bytes(additional_info_offset.try_into()?))?;
 
         // dic data
-        file.write(&u32::to_le_bytes(self.dictionary_len().try_into()?))?;
-        file.write(&u32::to_le_bytes(dictionary_meta_offset.try_into()?))?;
+        file.write_all(&u32::to_le_bytes(self.dictionary_len().try_into()?))?;
+        file.write_all(&u32::to_le_bytes(dictionary_meta_offset.try_into()?))?;
 
         // vec data
-        file.write(&u32::to_le_bytes(self.vector_len().try_into()?))?;
-        file.write(&u32::to_le_bytes(vector_meta_offset.try_into()?))?;
+        file.write_all(&u32::to_le_bytes(self.vector_len().try_into()?))?;
+        file.write_all(&u32::to_le_bytes(vector_meta_offset.try_into()?))?;
 
         // strptr data
-        file.write(&u32::to_le_bytes(strptr_offset.try_into()?))?;
+        file.write_all(&u32::to_le_bytes(strptr_offset.try_into()?))?;
 
         // data data
-        file.write(&u32::to_le_bytes(values_data_offset.try_into()?))?;
+        file.write_all(&u32::to_le_bytes(values_data_offset.try_into()?))?;
 
         // keyval data
-        file.write(&u32::to_le_bytes(entries_dictionary_offset.try_into()?))?;
+        file.write_all(&u32::to_le_bytes(entries_dictionary_offset.try_into()?))?;
 
         // adittional header
         file.seek(SeekFrom::Start(additional_info_offset))?;
-        file.write(&u16::to_le_bytes(self.unknown2))?;
+        file.write_all(&u16::to_le_bytes(self.unknown2))?;
         // initial vector
-        file.write(&u16::to_le_bytes((self.vector_len() - 1).try_into()?))?;
+        file.write_all(&u16::to_le_bytes((self.vector_len() - 1).try_into()?))?;
         //TODO:
         file.seek(SeekFrom::Current(8))?;
         // string offset
-        file.write(&u32::to_le_bytes(string_data_offset.try_into()?))?;
+        file.write_all(&u32::to_le_bytes(string_data_offset.try_into()?))?;
 
         //write pointer data
         file.seek(SeekFrom::Start(pointer_offset))?;
         write_sir0_footer(&mut file, sir0_pointers)?;
 
-        file.write(&[0; 14])?;
+        file.write_all(&[0; 14])?;
 
         Ok(())
     }

@@ -323,11 +323,11 @@ impl Layout {
         layout.insert(
             "lineBreak".into(),
             FlowDataValue::String(
-                match self.line_break {
-                    true => "True",
-                    false => "False",
-                }
-                .into(),
+                if self.line_break {
+                    "True"
+                } else {
+                    "False"
+                }.into(),
             ),
         );
 
@@ -354,7 +354,7 @@ impl ScenarioWithBranch {
             .get_vector(dic["entry"].get_vecid().unwrap())
             .unwrap()
             .iter()
-            .map(|x| x.get_string().unwrap().clone())
+            .map(|x| x.get_string().unwrap())
             .collect();
         let comment = dic["comment"].get_string().unwrap();
         let socket = FollowSocket::new(
@@ -406,7 +406,7 @@ impl ScenarioWithProgNo {
             .get_vector(dic["entry"].get_vecid().unwrap())
             .unwrap()
             .iter()
-            .map(|x| x.get_string().unwrap().clone())
+            .map(|x| x.get_string().unwrap())
             .collect();
         let comment = dic["comment"].get_string().unwrap();
         let scenario_progress_no = dic["scenarioProgressNo"].get_string().unwrap();
@@ -731,7 +731,7 @@ impl Scenario {
             .get_vector(dic["entry"].get_vecid().unwrap())
             .unwrap()
             .iter()
-            .map(|x| x.get_string().unwrap().clone())
+            .map(|x| x.get_string().unwrap())
             .collect();
         let comment = dic["comment"].get_string().unwrap();
         let socket = FollowSocket::new(
@@ -941,8 +941,8 @@ impl FollowSocket {
 pub struct Follow(Vec<OutputEnum>);
 
 impl Follow {
-    fn new(source: &FlowData, tempory: &mut FlowDataTempory, top_vec: &Vec<FlowDataValue>) -> Self {
-        if top_vec.len() < 1 {
+    fn new(source: &FlowData, tempory: &mut FlowDataTempory, top_vec: &[FlowDataValue]) -> Self {
+        if top_vec.is_empty() {
             panic!();
         };
         let mut datas = Vec::new();
