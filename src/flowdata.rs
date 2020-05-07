@@ -173,36 +173,36 @@ impl FlowData {
 //TODO: review every variable name with something clearer
 
 impl FlowData {
-    pub fn new<T: Read + Seek>(mut file: T) -> Result<FlowData, FlowDataError> {
+    pub fn new<T: Read + Seek>(file: &mut T) -> Result<FlowData, FlowDataError> {
         let mut flowdata = FlowData::default();
 
         //TODO: magic
         file.seek(SeekFrom::Start(4))?;
-        let content_data_ptr = read_u32_le(&mut file)?;
-        let _pointer_offsets_ptr = read_u32_le(&mut file)?;
+        let content_data_ptr = read_u32_le(&mut *file)?;
+        let _pointer_offsets_ptr = read_u32_le(&mut *file)?;
 
         file.seek(SeekFrom::Start(content_data_ptr.into()))?;
-        flowdata.unknown1 = read_u32_le(&mut file)?;
-        let info_ptr = read_u32_le(&mut file)?;
+        flowdata.unknown1 = read_u32_le(&mut *file)?;
+        let info_ptr = read_u32_le(&mut *file)?;
 
-        let dic_count = read_u32_le(&mut file)?;
-        let dic_section_ptr = read_u32_le(&mut file)?;
+        let dic_count = read_u32_le(&mut *file)?;
+        let dic_section_ptr = read_u32_le(&mut *file)?;
 
-        let vec_count = read_u32_le(&mut file)?;
-        let vec_section_ptr = read_u32_le(&mut file)?;
+        let vec_count = read_u32_le(&mut *file)?;
+        let vec_section_ptr = read_u32_le(&mut *file)?;
 
-        let strptr_section_ptr = read_u32_le(&mut file)?;
+        let strptr_section_ptr = read_u32_le(&mut *file)?;
 
-        let val_section_ptr = read_u32_le(&mut file)?;
-        let keyval_section_ptr = read_u32_le(&mut file)?;
+        let val_section_ptr = read_u32_le(&mut *file)?;
+        let keyval_section_ptr = read_u32_le(&mut *file)?;
 
         file.seek(SeekFrom::Start(info_ptr.into()))?;
-        flowdata.unknown2 = read_u16_le(&mut file)?;
-        let _vector_number = read_u16_le(&mut file)?;
+        flowdata.unknown2 = read_u16_le(&mut *file)?;
+        let _vector_number = read_u16_le(&mut *file)?;
         //TODO: seem to be the first dict and the first list
-        let _first_dic = read_u32_le(&mut file)?;
+        let _first_dic = read_u32_le(&mut *file)?;
         //NOTE: THEY ARE NOT GUARANTED TO HAVE THIS SIZE
-        let _first_vec = read_u32_le(&mut file)?;
+        let _first_vec = read_u32_le(&mut *file)?;
         let val_section_len = (keyval_section_ptr - val_section_ptr) / 4;
         let keyval_section_len = (info_ptr - keyval_section_ptr) / 4;
 
@@ -214,8 +214,8 @@ impl FlowData {
         for dic_id in 0..(dic_count as u16) {
             let dic_record_ptr = dic_section_ptr + 8 * dic_id as u32;
             file.seek(SeekFrom::Start(dic_record_ptr.into()))?;
-            let dic_size = read_u32_le(&mut file)?;
-            let dic_ptr = read_u32_le(&mut file)?;
+            let dic_size = read_u32_le(&mut *file)?;
+            let dic_ptr = read_u32_le(&mut *file)?;
 
             if latest_dict_ptr > dic_ptr {
                 panic!("not well ordered");
@@ -227,15 +227,15 @@ impl FlowData {
             for counter_2 in 0..dic_size {
                 //TODO: name counter_2
                 file.seek(SeekFrom::Start((dic_ptr + 2 * counter_2).into()))?;
-                let keyval_id = read_u16_le(&mut file)?;
+                let keyval_id = read_u16_le(&mut *file)?;
                 if keyval_id as u32 >= keyval_section_len {
                     return Err(FlowDataError::KeyValTooBig(keyval_id, keyval_section_len));
                 };
 
                 let keyval_record_ptr = keyval_section_ptr + 4 * keyval_id as u32;
                 file.seek(SeekFrom::Start(keyval_record_ptr as u64))?;
-                let key_id = read_u16_le(&mut file)?;
-                let val_id = read_u16_le(&mut file)?;
+                let key_id = read_u16_le(&mut *file)?;
+                let val_id = read_u16_le(&mut *file)?;
                 if (key_id as u32) >= strptr_section_len {
                     return Err(FlowDataError::StringReferenceTooBig(
                         key_id,
@@ -248,12 +248,12 @@ impl FlowData {
 
                 let strptr_record_ptr = strptr_section_ptr + (4 * key_id) as u32;
                 file.seek(SeekFrom::Start(strptr_record_ptr as u64))?;
-                let key = read_reference_u32(&mut file, |f| read_string_utf8(f))?;
+                let key = read_reference_u32(&mut *file, |f| read_string_utf8(f))?;
 
                 let val_record_ptr = val_section_ptr + 4 * val_id as u32;
                 file.seek(SeekFrom::Start(val_record_ptr as u64))?;
-                let val_type = read_u16_le(&mut file)?;
-                let val_data = read_u16_le(&mut file)?;
+                let val_type = read_u16_le(&mut *file)?;
+                let val_data = read_u16_le(&mut *file)?;
                 let val: FlowDataValue;
                 match val_type {
                     0 => {
@@ -266,7 +266,7 @@ impl FlowData {
                         //TODO: reused name
                         let strptr_record_ptr = strptr_section_ptr + 4 * val_data as u32;
                         file.seek(SeekFrom::Start(strptr_record_ptr as u64))?;
-                        val = FlowDataValue::String(read_reference_u32(&mut file, |f| {
+                        val = FlowDataValue::String(read_reference_u32(&mut *file, |f| {
                             read_string_utf8(f)
                         })?);
                     }
@@ -296,21 +296,21 @@ impl FlowData {
         for vec_id in 0..vec_count {
             let vec_record_ptr = vec_section_ptr + 8 * vec_id;
             file.seek(SeekFrom::Start(vec_record_ptr as u64))?;
-            let vec_size = read_u32_le(&mut file)?;
-            let vec_ptr = read_u32_le(&mut file)?;
+            let vec_size = read_u32_le(&mut *file)?;
+            let vec_ptr = read_u32_le(&mut *file)?;
 
             let mut vec = Vec::new();
             for counter_2 in 0..vec_size {
                 file.seek(SeekFrom::Start(vec_ptr as u64 + 2 * counter_2 as u64))?;
-                let keyval_id = read_u16_le(&mut file)?;
+                let keyval_id = read_u16_le(&mut *file)?;
                 if keyval_id as u32 >= val_section_len {
                     return Err(FlowDataError::KeyValTooBig(keyval_id, val_section_len));
                 };
 
                 let val_record_ptr = val_section_ptr + 4 * keyval_id as u32;
                 file.seek(SeekFrom::Start(val_record_ptr as u64))?;
-                let val_type = read_u16_le(&mut file)?;
-                let val_data = read_u16_le(&mut file)?;
+                let val_type = read_u16_le(&mut *file)?;
+                let val_data = read_u16_le(&mut *file)?;
                 let val;
                 match val_type {
                     0 => {
@@ -322,7 +322,7 @@ impl FlowData {
                         }
                         let strptr_record_ptr = strptr_section_ptr + 4 * val_data as u32;
                         file.seek(SeekFrom::Start(strptr_record_ptr as u64))?;
-                        let s = read_reference_u32(&mut file, |f| read_string_utf8(f))?;
+                        let s = read_reference_u32(&mut *file, |f| read_string_utf8(f))?;
                         val = FlowDataValue::String(s);
                     }
                     1 => {
