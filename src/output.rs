@@ -21,25 +21,32 @@ pub enum OutputEnum {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Floor {
-    i: String,
-    o: String,
+    r#in: String,
+    out: String,
+    out_in_a_vec: bool,
 }
 
 impl Floor {
     fn new(source: &FlowData, dicid: usize) -> Self {
         let dic = source.get_dictionary(dicid).unwrap();
-        let o = &dic["out"];
-        let i = dic["in"].get_string().unwrap();
-        let o = match o {
-            FlowDataValue::String(str) => str.clone(),
+        let out = &dic["out"];
+        let r#in = dic["in"].get_string().unwrap();
+        let out_in_a_vec;
+        let out = match out {
+            FlowDataValue::String(str) => {
+                out_in_a_vec = false;
+                str.clone()
+            },
             FlowDataValue::RefVec(vecid) => {
+                out_in_a_vec = true;
                 let vec = source.get_vector(*vecid as usize).unwrap();
                 vec[0].get_string().unwrap()
-            }
+            },
             _ => panic!(),
         };
 
-        Self { i, o }
+        Self { r#in, out, out_in_a_vec }
+    }
     }
 }
 
