@@ -16,29 +16,10 @@
 									"start": "$START"
 								},
 								"socket_out": {
-									"next": "$0x9340"
+									"next": "$START"
 								}
 							},
-							"debugname": "Personality quiz",
-							"debugmenu_tag": "system"
-						}
-					},
-					{
-						"Scenario": {
-							"flowtype": "normal",
-							"entry": [
-								"opdemo01"
-							],
-							"comment": "",
-							"socket": {
-								"socket_in": {
-									"start": "$0x9340"
-								},
-								"socket_out": {
-									"next": ""
-								}
-							},
-							"debugname": "Personality quiz",
+							"debugname": "first story cutscene",
 							"debugmenu_tag": "system"
 						}
 					}

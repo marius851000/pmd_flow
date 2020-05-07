@@ -1,6 +1,5 @@
-use crate::tool::{
-    read_reference_u32, read_string_utf8, read_u16_le, read_u32_le, write_sir0_footer,
-};
+use crate::tool::{read_reference_u32, read_string_utf8, read_u16_le, read_u32_le};
+use pmd_sir0::write_sir0_footer;
 use std::collections::{HashMap, HashSet};
 use std::convert::TryInto;
 use std::io;
@@ -361,7 +360,19 @@ impl FlowData {
         let mut unique_entries_dictionary_vec = Vec::new();
 
         let mut strings = HashMap::new();
-        let mut strings_vec = Vec::new();
+        //doesn't work
+        //let mut strings_vec: Vec<String> = vec!["idname".into(), "$START".into(), "in".into(), "start".into()];
+        //does work
+        let mut strings_vec: Vec<String> = vec![
+            "in".into(),
+            "start".into(),
+            "idname".into(),
+            "$START".into(),
+        ];
+
+        for (counter, str) in strings_vec.iter().enumerate() {
+            strings.insert(str.clone(), counter);
+        }
 
         for dicid in 0..self.dictionary_len() {
             let dic = self.get_dictionary(dicid).unwrap();
@@ -430,6 +441,7 @@ impl FlowData {
         if COMPARE {
             assert_eq!(values_data_offset, 79988);
         }
+
         for data in unique_data_vec {
             match data {
                 FlowDataValue::String(str) => {
@@ -591,7 +603,7 @@ impl FlowData {
         // adittional header
         file.seek(SeekFrom::Start(additional_info_offset))?;
         file.write(&u16::to_le_bytes(self.unknown2))?;
-        //TODO: why -1 ???
+        // initial vector
         file.write(&u16::to_le_bytes((self.vector_len() - 1).try_into()?))?;
         //TODO:
         file.seek(SeekFrom::Current(8))?;

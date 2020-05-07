@@ -251,19 +251,35 @@ impl FollowGroup {
 
     fn generate(&self, dest: &mut FlowData) -> u16 {
         let mut dic = HashMap::new();
-        dic.insert("debug_groupname".to_string(), FlowDataValue::String(self.debug_groupname.clone()));
-        dic.insert("data".into(), FlowDataValue::RefVec(self.data.generate(dest)));
-        dic.insert("layout".into(), FlowDataValue::RefDic(self.layout.generate(dest)));
-        dic.insert("debugmenu_tag".to_string(), FlowDataValue::String(self.debugmenu_tag.clone()));
+        dic.insert(
+            "debug_groupname".to_string(),
+            FlowDataValue::String(self.debug_groupname.clone()),
+        );
+        dic.insert(
+            "data".into(),
+            FlowDataValue::RefVec(self.data.generate(dest)),
+        );
+        dic.insert(
+            "layout".into(),
+            FlowDataValue::RefDic(self.layout.generate(dest)),
+        );
+        dic.insert(
+            "debugmenu_tag".to_string(),
+            FlowDataValue::String(self.debugmenu_tag.clone()),
+        );
         dest.push_dictionary(dic).unwrap()
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Layout {
+    #[serde(default)]
     line_break: bool,
+    #[serde(default)]
     h: i64,
+    #[serde(default)]
     w: i64,
+    #[serde(default)]
     x: i64,
 }
 
@@ -288,14 +304,32 @@ impl Layout {
     fn generate(&self, dest: &mut FlowData) -> u16 {
         let mut layout = HashMap::new();
         let mut pos = HashMap::new();
-        pos.insert("posH".to_string(), FlowDataValue::String(format!("{}", self.h)));
-        pos.insert("posW".to_string(), FlowDataValue::String(format!("{}", self.w)));
-        pos.insert("posX".to_string(), FlowDataValue::String(format!("{}", self.x)));
-        layout.insert("layoutPos".into(), FlowDataValue::RefDic(dest.push_dictionary(pos).unwrap()));
-        layout.insert("lineBreak".into(), FlowDataValue::String(match self.line_break {
-            true => "True",
-            false => "False",
-        }.into()));
+        pos.insert(
+            "posH".to_string(),
+            FlowDataValue::String(format!("{}", self.h)),
+        );
+        pos.insert(
+            "posW".to_string(),
+            FlowDataValue::String(format!("{}", self.w)),
+        );
+        pos.insert(
+            "posX".to_string(),
+            FlowDataValue::String(format!("{}", self.x)),
+        );
+        layout.insert(
+            "layoutPos".into(),
+            FlowDataValue::RefDic(dest.push_dictionary(pos).unwrap()),
+        );
+        layout.insert(
+            "lineBreak".into(),
+            FlowDataValue::String(
+                match self.line_break {
+                    true => "True",
+                    false => "False",
+                }
+                .into(),
+            ),
+        );
 
         dest.push_dictionary(layout).unwrap()
     }
@@ -510,30 +544,78 @@ impl FreeMove {
         let mut dic = HashMap::new();
         let mut dic_start = HashMap::new();
         dic_start.insert("map".into(), FlowDataValue::String(self.start_map.clone()));
-        dic_start.insert("continue".into(), FlowDataValue::String(self.start_continue.clone()));
-        dic_start.insert("place".into(), FlowDataValue::String(self.start_map.clone()));
-        dic.insert("start".into(), FlowDataValue::RefDic(dest.push_dictionary(dic_start).unwrap()));
+        dic_start.insert(
+            "continue".into(),
+            FlowDataValue::String(self.start_continue.clone()),
+        );
+        dic_start.insert(
+            "place".into(),
+            FlowDataValue::String(self.start_map.clone()),
+        );
+        dic.insert(
+            "start".into(),
+            FlowDataValue::RefDic(dest.push_dictionary(dic_start).unwrap()),
+        );
 
-        dic.insert("comment".into(), FlowDataValue::String(self.comment.clone()));
-        dic.insert("scenarioProgressNo".into(), FlowDataValue::String(self.scenario_progress_no.clone()));
+        dic.insert(
+            "comment".into(),
+            FlowDataValue::String(self.comment.clone()),
+        );
+        dic.insert(
+            "scenarioProgressNo".into(),
+            FlowDataValue::String(self.scenario_progress_no.clone()),
+        );
 
         let mut dic_next_cond = HashMap::new();
-        dic_next_cond.insert("next".into(), FlowDataValue::String(self.next_cond_next.clone()));
-        dic_next_cond.insert("other".into(), FlowDataValue::String(self.next_cond_other.clone()));
-        dic.insert("next_cond".into(), FlowDataValue::RefDic(dest.push_dictionary(dic_next_cond).unwrap()));
+        dic_next_cond.insert(
+            "next".into(),
+            FlowDataValue::String(self.next_cond_next.clone()),
+        );
+        dic_next_cond.insert(
+            "other".into(),
+            FlowDataValue::String(self.next_cond_other.clone()),
+        );
+        dic.insert(
+            "next_cond".into(),
+            FlowDataValue::RefDic(dest.push_dictionary(dic_next_cond).unwrap()),
+        );
 
         let mut dic_follow_chara = HashMap::new();
         for follow_chara_id in 0..3 {
-            dic_follow_chara.insert(format!("follow{}", follow_chara_id), FlowDataValue::String(self.follow_chara[follow_chara_id].clone()));
+            dic_follow_chara.insert(
+                format!("follow{}", follow_chara_id),
+                FlowDataValue::String(self.follow_chara[follow_chara_id].clone()),
+            );
         }
-        dic.insert("followChara".into(), FlowDataValue::RefDic(dest.push_dictionary(dic_follow_chara).unwrap()));
+        dic.insert(
+            "followChara".into(),
+            FlowDataValue::RefDic(dest.push_dictionary(dic_follow_chara).unwrap()),
+        );
 
-        dic.insert("socket".into(), FlowDataValue::RefVec(self.socket.generate(dest)));
-        dic.insert("playBtn".into(), FlowDataValue::String(self.play_btn.clone()));
-        dic.insert("layout".into(), FlowDataValue::RefDic(self.layout.generate(dest)));
-        dic.insert("debugname".into(), FlowDataValue::String(self.debugname.clone()));
-        dic.insert("timeline".into(), FlowDataValue::RefDic(self.timeline.generate(dest)));
-        dic.insert("debugmenu_tag".into(), FlowDataValue::String(self.debugmenu_tag.clone()));
+        dic.insert(
+            "socket".into(),
+            FlowDataValue::RefVec(self.socket.generate(dest)),
+        );
+        dic.insert(
+            "playBtn".into(),
+            FlowDataValue::String(self.play_btn.clone()),
+        );
+        dic.insert(
+            "layout".into(),
+            FlowDataValue::RefDic(self.layout.generate(dest)),
+        );
+        dic.insert(
+            "debugname".into(),
+            FlowDataValue::String(self.debugname.clone()),
+        );
+        dic.insert(
+            "timeline".into(),
+            FlowDataValue::RefDic(self.timeline.generate(dest)),
+        );
+        dic.insert(
+            "debugmenu_tag".into(),
+            FlowDataValue::String(self.debugmenu_tag.clone()),
+        );
 
         dest.push_dictionary(dic).unwrap()
     }
@@ -675,16 +757,41 @@ impl Scenario {
     }
     fn generate(&self, dest: &mut FlowData) -> u16 {
         let mut dic = HashMap::new();
-        dic.insert("flowtype".into(), FlowDataValue::String(self.flowtype.clone()));
+        dic.insert(
+            "flowtype".into(),
+            FlowDataValue::String(self.flowtype.clone()),
+        );
 
-        let entrys = self.entry.iter().map(|x| FlowDataValue::String(x.clone())).collect();
-        dic.insert("entry".into(), FlowDataValue::RefVec(dest.push_vector(entrys).unwrap()));
+        let entrys = self
+            .entry
+            .iter()
+            .map(|x| FlowDataValue::String(x.clone()))
+            .collect();
+        dic.insert(
+            "entry".into(),
+            FlowDataValue::RefVec(dest.push_vector(entrys).unwrap()),
+        );
 
-        dic.insert("comment".into(), FlowDataValue::String(self.comment.clone()));
-        dic.insert("socket".into(), FlowDataValue::RefVec(self.socket.generate(dest)));
-        dic.insert("layout".into(), FlowDataValue::RefDic(self.layout.generate(dest)));
-        dic.insert("debugname".into(), FlowDataValue::String(self.debugname.clone()));
-        dic.insert("debugmenu_tag".into(), FlowDataValue::String(self.debugmenu_tag.clone()));
+        dic.insert(
+            "comment".into(),
+            FlowDataValue::String(self.comment.clone()),
+        );
+        dic.insert(
+            "socket".into(),
+            FlowDataValue::RefVec(self.socket.generate(dest)),
+        );
+        dic.insert(
+            "layout".into(),
+            FlowDataValue::RefDic(self.layout.generate(dest)),
+        );
+        dic.insert(
+            "debugname".into(),
+            FlowDataValue::String(self.debugname.clone()),
+        );
+        dic.insert(
+            "debugmenu_tag".into(),
+            FlowDataValue::String(self.debugmenu_tag.clone()),
+        );
 
         dest.push_dictionary(dic).unwrap()
     }
@@ -820,13 +927,13 @@ impl FollowSocket {
             dic.insert("idname".into(), FlowDataValue::String(socket_in.1.clone()));
             dic.insert("in".into(), FlowDataValue::String(socket_in.0.clone()));
             vec.push(FlowDataValue::RefDic(dest.push_dictionary(dic).unwrap()));
-        };
+        }
         for socket_out in &self.socket_out {
             let mut dic = HashMap::new();
             dic.insert("to".into(), FlowDataValue::String(socket_out.1.clone()));
             dic.insert("out".into(), FlowDataValue::String(socket_out.0.clone()));
             vec.push(FlowDataValue::RefDic(dest.push_dictionary(dic).unwrap()));
-        };
+        }
         dest.push_vector(vec).unwrap()
     }
 }
@@ -926,7 +1033,7 @@ impl FlowDataOutput {
         let mut first_vec = Vec::new();
         first_vec.push(FlowDataValue::String("".into()));
         result.push_vector(first_vec).unwrap();
-        let mut first_dic = HashMap::new();
+        let first_dic = HashMap::new();
         result.push_dictionary(first_dic).unwrap();
         self.output.generate(&mut result);
         result

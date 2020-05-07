@@ -1,5 +1,5 @@
 use std::io::Error as IOError;
-use std::io::{Read, Seek, SeekFrom, Write};
+use std::io::{Read, Seek, SeekFrom};
 
 pub fn read_u32_le<T: Read>(file: &mut T) -> Result<u32, IOError> {
     let mut buffer = [0; 4];
@@ -37,41 +37,6 @@ where
     let result = parse(file)?;
     file.seek(SeekFrom::Start(ressource_address))?;
     Ok(result)
-}
-
-pub fn write_sir0_footer<T>(file: &mut T, dic: Vec<u32>) -> Result<(), IOError>
-where
-    T: Write,
-{
-    let mut latest_written_pointer = 0;
-    for original_to_write in dic {
-        let mut remaining_to_write = original_to_write - latest_written_pointer;
-        latest_written_pointer = original_to_write;
-        let mut reversed_to_write = Vec::new();
-        if remaining_to_write == 0 {
-            //NOTE: this never happen in original game. This is an extrapolation of what will need to be written in such a situation.
-            reversed_to_write.push(0);
-        } else {
-            loop {
-                if remaining_to_write >= 128 {
-                    let to_write = (remaining_to_write % 128) as u8;
-                    remaining_to_write = remaining_to_write >> 7;
-                    reversed_to_write.push(to_write);
-                } else {
-                    reversed_to_write.push(remaining_to_write as u8);
-                    break;
-                }
-            }
-        }
-        for (counter, value_to_write) in reversed_to_write.iter().cloned().enumerate().rev() {
-            if counter == 0 {
-                file.write(&[value_to_write])?;
-            } else {
-                file.write(&[value_to_write + 0b10000000])?;
-            }
-        }
-    }
-    Ok(())
 }
 
 /* pub fn add_padding<T>(file: &mut T, pad_indication_number: u64) -> Result<(), IOError>
