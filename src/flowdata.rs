@@ -344,6 +344,8 @@ impl FlowData {
         Ok(flowdata)
     }
 
+    #[allow(clippy::map_entry)]
+    #[allow(clippy::cognitive_complexity)]
     pub fn write<T: Write + Seek>(&self, mut file: &mut T) -> Result<(), FlowDataError> {
         //if set to true, it will compare some value (mainly the size of the part) to the file script_flow_data_us.bin in the EU version of the game
         const COMPARE: bool = false;

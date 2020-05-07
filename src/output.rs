@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum OutputEnum {
     FollowGroup(FollowGroup),
     ScenarioWithBranch(ScenarioWithBranch),
