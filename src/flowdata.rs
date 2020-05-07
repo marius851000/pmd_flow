@@ -496,6 +496,13 @@ impl FlowData {
             file.write_all(&u16::to_le_bytes(unique_data[&entry].try_into()?))?;
         }
 
+        assert!(additional_info_offset+12 >= file.seek(SeekFrom::Current(0)).unwrap());
+        while additional_info_offset+12 != file.seek(SeekFrom::Current(0)).unwrap() {
+            file.write_all(&[0]).unwrap();
+        };
+        //pointer to the string -- currently empty
+        file.write_all(&[0; 4]).unwrap();
+
         // and an additional 0...
         //TODO: maybe padding
         file.write_all(&[0; 2])?;
