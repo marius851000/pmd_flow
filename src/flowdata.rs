@@ -496,10 +496,10 @@ impl FlowData {
             file.write_all(&u16::to_le_bytes(unique_data[&entry].try_into()?))?;
         }
 
-        assert!(additional_info_offset+12 >= file.seek(SeekFrom::Current(0)).unwrap());
-        while additional_info_offset+12 != file.seek(SeekFrom::Current(0)).unwrap() {
+        assert!(additional_info_offset + 12 >= file.seek(SeekFrom::Current(0)).unwrap());
+        while additional_info_offset + 12 != file.seek(SeekFrom::Current(0)).unwrap() {
             file.write_all(&[0]).unwrap();
-        };
+        }
         //pointer to the string -- currently empty
         file.write_all(&[0; 4]).unwrap();
 
@@ -588,7 +588,7 @@ impl FlowData {
         file.write_all(&u32::to_le_bytes(16))?;
         file.write_all(&u32::to_le_bytes(pointer_offset.try_into()?))?;
         file.write_all(&[0; 4])?; //TODO: figure out what this is
-                              // normal header
+                                  // normal header
         file.write_all(&u32::to_le_bytes(self.unknown1))?;
         file.write_all(&u32::to_le_bytes(additional_info_offset.try_into()?))?;
 
