@@ -71,6 +71,7 @@ impl Floor {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Dungeon {
     flowtype: String,
+    #[serde(default)]
     comment: String,
     scenario_progress_no: String,
     socket: FollowSocket,
@@ -80,7 +81,9 @@ pub struct Dungeon {
     #[serde(default)]
     layout: Layout,
     floor: Floor,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -193,12 +196,15 @@ impl Dungeon {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AskSave {
+    #[serde(default)]
     comment: String,
     r#type: String,
     socket: FollowSocket,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -259,12 +265,15 @@ impl AskSave {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FreeMoveEvent {
+    #[serde(default)]
     comment: String,
     socket: FollowSocket,
     event_type: String,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -327,11 +336,14 @@ impl FreeMoveEvent {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DungeonEnd {
+    #[serde(default)]
     comment: String,
     socket: FollowSocket,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -392,6 +404,7 @@ pub struct FollowGroup {
     data: Follow,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -497,12 +510,15 @@ impl Layout {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ScenarioWithBranch {
     entry: Vec<String>,
+    #[serde(default)]
     comment: String,
     socket: FollowSocket,
     branch: Vec<String>,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -589,12 +605,15 @@ impl ScenarioWithBranch {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ScenarioWithProgNo {
     entry: Vec<String>,
+    #[serde(default)]
     comment: String,
     socket: FollowSocket,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
     timeline: Timeline,
+    #[serde(default)]
     debugmenu_tag: String,
     scenario_progress_no: String,
 }
@@ -705,6 +724,7 @@ pub struct FreeMove {
     start_map: String,
     start_continue: String,
     start_place: String,
+    #[serde(default)]
     comment: String,
     scenario_progress_no: String,
     next_cond_next: String,
@@ -714,8 +734,10 @@ pub struct FreeMove {
     play_btn: String,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
     timeline: Timeline,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -866,12 +888,15 @@ impl FreeMove {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DgStagingPost {
     map: String,
+    #[serde(default)]
     comment: String,
     socket: FollowSocket,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
     timeline: Timeline,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -939,6 +964,7 @@ impl DgStagingPost {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DgFlowBranch {
     act: String,
+    #[serde(default)]
     comment: String,
     count: String,
     socket: FollowSocket,
@@ -946,7 +972,9 @@ pub struct DgFlowBranch {
     id: String,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -1016,11 +1044,14 @@ impl DgFlowBranch {
 pub struct Scenario {
     flowtype: String,
     entry: Vec<String>,
+    #[serde(default)]
     comment: String,
     socket: FollowSocket,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
@@ -1100,13 +1131,16 @@ impl Scenario {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DgFlowBranchSetCounter {
+    #[serde(default)]
     comment: String,
     count: String,
     socket: FollowSocket,
     id: String,
     #[serde(default)]
     layout: Layout,
+    #[serde(default)]
     debugname: String,
+    #[serde(default)]
     debugmenu_tag: String,
 }
 
