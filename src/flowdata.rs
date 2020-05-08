@@ -362,19 +362,7 @@ impl FlowData {
         let mut unique_entries_dictionary_vec = Vec::new();
 
         let mut strings = HashMap::new();
-        //doesn't work
-        //let mut strings_vec: Vec<String> = vec!["idname".into(), "$START".into(), "in".into(), "start".into()];
-        //does work
-        let mut strings_vec: Vec<String> = vec![
-            "in".into(),
-            "start".into(),
-            "idname".into(),
-            "$START".into(),
-        ];
-
-        for (counter, str) in strings_vec.iter().enumerate() {
-            strings.insert(str.clone(), counter);
-        }
+        let mut strings_vec: Vec<String> = Vec::new();
 
         for dicid in 0..self.dictionary_len() {
             let dic = self.get_dictionary(dicid).unwrap();
