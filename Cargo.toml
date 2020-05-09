@@ -1,9 +1,13 @@
 [package]
 name = "pmd_flow"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["marius851000 <mariusdavid@laposte.net>"]
 edition = "2018"
-
+description = "A library that can read/write flow file (used in pokemon super mystery dungeon, and maybe pmd) as json"
+repository = "https://github.com/marius851000/pmd_flow"
+keywords = [ "parser" ]
+categories = [ "parser-implementations" ]
+license = "CC0-1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
