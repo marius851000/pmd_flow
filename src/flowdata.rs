@@ -2,14 +2,16 @@ use crate::tool::{read_reference_u32, read_string_utf8, read_u16_le, read_u32_le
 use pmd_sir0::write_sir0_footer;
 use std::collections::{HashMap, HashSet};
 use std::convert::TryInto;
+use std::error::Error;
+use std::fmt;
 use std::io;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::num::TryFromIntError;
 //TODO: ensure comment are also copied
 //TODO: remove all panic!
 
-//TODO: Error
 #[derive(Debug)]
+/// List possible error that can happen while parsing/writing a binary flow file (with [`FlowData`])
 pub enum FlowDataError {
     IOError(io::Error),
     TryFromIntError(TryFromIntError),
@@ -21,6 +23,34 @@ pub enum FlowDataError {
     VecReferenceTooBig(u16, u32),
     UnrecognizedTypeForDic(u16),
     UnrecognizedTypeForVec(u16),
+}
+
+impl Error for FlowDataError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::IOError(err) => Some(err),
+            Self::TryFromIntError(err) => Some(err),
+            _ => None,
+        }
+    }
+}
+
+impl fmt::Display for FlowDataError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::IOError(_) => write!(f, "an input/output error happened"),
+            Self::TryFromIntError(_) => write!(f, "an error happened while transforming a number. Remember that the number of dict and the number of vec can't be more than 2^16."),
+            Self::IDNameNotString(value) => write!(f, "an id name for a string is not reconized ({:?}).", value),
+            Self::StringReferenceTooBig(_pos, _len) => write!(f, "A reference to a string is too big (TODO: more debug info)."),
+            Self::KeyValTooBig(_pos, _len) => write!(f, "A key val is too big (TODO: more debug info)."),
+            Self::ValTooBig(_pos, _len) => write!(f, "A val is too big (TODO: more debug info)."),
+            Self::DicReferenceTooBig(_pos, _len) => write!(f, "A dic reference is too big (TODO: more debug info)."),
+            Self::VecReferenceTooBig(_pos, _len) => write!(f, "A vec reference is too big (TODO: more debug info)."),
+            Self::UnrecognizedTypeForDic(value) => write!(f, "A value for a dic is unreconized (the value is {}).", value),
+            Self::UnrecognizedTypeForVec(value) => write!(f, "A value for a vec is unreconized (the value is {}).", value),
+
+        }
+    }
 }
 
 impl From<io::Error> for FlowDataError {
