@@ -66,13 +66,18 @@ impl From<TryFromIntError> for FlowDataError {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
+/// List possible value for an entry
 pub enum FlowDataValue {
+    /// a string
     String(String),
+    /// a reference to a dictionary
     RefDic(u16),
+    /// a reference to a vector
     RefVec(u16),
 }
 
 impl FlowDataValue {
+    /// return the value of the string if it exist
     pub fn get_string(&self) -> Option<String> {
         match self {
             Self::String(str) => Some(str.clone()),
@@ -80,6 +85,7 @@ impl FlowDataValue {
         }
     }
 
+    /// return the id of the vector this point to, if it exist
     pub fn get_vecid(&self) -> Option<usize> {
         match self {
             Self::RefVec(vecid) => Some(*vecid as usize),
@@ -87,6 +93,7 @@ impl FlowDataValue {
         }
     }
 
+    /// return the id of the dictionary this point to, if it exist
     pub fn get_dicid(&self) -> Option<usize> {
         match self {
             Self::RefDic(dicid) => Some(*dicid as usize),
@@ -96,6 +103,14 @@ impl FlowDataValue {
 }
 
 #[derive(Debug, Default)]
+/// Contain the data obtained from a binary flow file. It is hightly recommended to process it with
+/// [`FlowDataOutput`] if you plan to do high level modification on it.
+///
+/// The file contain a list of dictionaries, and a list of vectors, orderer.
+///
+/// Each entry of the dictionary/vector can be a string or a reference to another dic/vec
+///
+/// Dictionary are indixed by String, Vec by position.
 pub struct FlowData {
     // imperative
     dictionaries: Vec<HashMap<String, FlowDataValue>>,
@@ -110,6 +125,7 @@ pub struct FlowData {
 }
 
 impl FlowData {
+    /// A new dictionary to the [`FlowData`]
     pub fn push_dictionary(
         &mut self,
         values: HashMap<String, FlowDataValue>,
@@ -140,6 +156,7 @@ impl FlowData {
         Ok((self.dictionaries.len() - 1) as u16)
     }
 
+    /// Add a new vector in the [`FlowData`]
     pub fn push_vector(&mut self, values: Vec<FlowDataValue>) -> Result<u16, FlowDataError> {
         let actual_dictionary_id: u16 = self.dictionaries.len().try_into()?;
         let reference_self = FlowDataValue::RefDic(actual_dictionary_id);
@@ -156,14 +173,17 @@ impl FlowData {
         Ok((self.vectors.len() - 1) as u16)
     }
 
+    /// return the number of dictionary
     pub fn dictionary_len(&self) -> usize {
         self.dictionaries.len()
     }
 
+    /// return the number of vector
     pub fn vector_len(&self) -> usize {
         self.vectors.len()
     }
 
+    /// return a reference to a dictionary if it exist, None otherwise
     pub fn get_dictionary(&self, dicid: usize) -> Option<&HashMap<String, FlowDataValue>> {
         if dicid >= self.dictionaries.len() {
             None
@@ -172,6 +192,7 @@ impl FlowData {
         }
     }
 
+    /// return a mutable reference to a dictionary if it exist, None otherwise
     pub fn get_dictionary_mut(
         &mut self,
         dicid: usize,
@@ -183,6 +204,7 @@ impl FlowData {
         }
     }
 
+    /// return a reference to a vector if it exist, None otherwise.
     pub fn get_vector(&self, vecid: usize) -> Option<&Vec<FlowDataValue>> {
         if vecid >= self.vectors.len() {
             None
@@ -191,6 +213,7 @@ impl FlowData {
         }
     }
 
+    /// return a mutable reference to a vector if it exist, None otherwise.
     pub fn get_vector_mut(&mut self, vecid: usize) -> Option<&mut Vec<FlowDataValue>> {
         if vecid >= self.vectors.len() {
             None
@@ -203,6 +226,7 @@ impl FlowData {
 //TODO: review every variable name with something clearer
 
 impl FlowData {
+    /// decode a binary flow file
     pub fn new<T: Read + Seek>(file: &mut T) -> Result<FlowData, FlowDataError> {
         let mut flowdata = FlowData::default();
 
@@ -376,6 +400,9 @@ impl FlowData {
 
     #[allow(clippy::map_entry)]
     #[allow(clippy::cognitive_complexity)]
+    /// encode a binary flow file
+    ///
+    /// note that entry are automatically deduplicated.
     pub fn write<T: Write + Seek>(&self, mut file: &mut T) -> Result<(), FlowDataError> {
         //if set to true, it will compare some value (mainly the size of the part) to the file script_flow_data_us.bin in the EU version of the game
         const COMPARE: bool = false;
