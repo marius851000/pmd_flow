@@ -557,6 +557,7 @@ impl FlowData {
         if COMPARE {
             assert_eq!(strptr_offset, 172_556);
         }
+        
         for _ in 0..strings.len() {
             sir0_pointers.push(file.seek(SeekFrom::Current(0))? as u32);
             file.write_all(&[0; 4])?;

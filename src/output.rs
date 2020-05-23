@@ -768,7 +768,7 @@ impl FreeMove {
             .get_dictionary(dic["followChara"].get_dicid().unwrap())
             .unwrap();
         let mut follow_chara = Vec::new();
-        for follow_chara_id in ["follow0", "follow1", "follow2"].iter() {
+        for follow_chara_id in &["follow0", "follow1", "follow2"] {
             let temp = follow_chara_dic[*follow_chara_id].clone();
             follow_chara.push(temp.get_string().unwrap());
         }
@@ -1397,7 +1397,8 @@ struct FlowDataTempory {
     pub idname_set: HashMap<String, (String, usize)>,
 }
 
-/// A FlowData that can serialized and deserialized
+/// A [`FlowData`] representation that can serialized and deserialized, and is easily modifable by
+/// human.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FlowDataOutput {
     output: Follow,
@@ -1408,7 +1409,8 @@ impl FlowDataOutput {
     ///
     /// # Panics
     ///
-    /// This function will panic if anything in the FlowData is invalid
+    /// This function will panic if anything in the [`FlowData`] is invalid
+    #[allow(clippy::needless_pass_by_value)]
     pub fn new(source: FlowData) -> FlowDataOutput {
         let top_vec = source.get_vector(source.vector_len() - 1).unwrap();
         let mut tempory = FlowDataTempory::default();
