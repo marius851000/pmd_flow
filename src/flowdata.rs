@@ -1,5 +1,5 @@
 use crate::tool::{read_reference_u32, read_string_utf8, read_u16_le, read_u32_le};
-use pmd_sir0::write_sir0_footer;
+use pmd_sir0::{write_sir0_footer, Sir0WriteFooterError};
 use std::collections::{HashMap, HashSet};
 use std::convert::TryInto;
 use std::error::Error;
@@ -23,6 +23,7 @@ pub enum FlowDataError {
     VecReferenceTooBig(u16, u32),
     UnrecognizedTypeForDic(u16),
     UnrecognizedTypeForVec(u16),
+    Sir0WriteFooterError(Sir0WriteFooterError)
 }
 
 impl Error for FlowDataError {
@@ -30,6 +31,7 @@ impl Error for FlowDataError {
         match self {
             Self::IOError(err) => Some(err),
             Self::TryFromIntError(err) => Some(err),
+            Self::Sir0WriteFooterError(err) => Some(err),
             _ => None,
         }
     }
@@ -48,7 +50,7 @@ impl fmt::Display for FlowDataError {
             Self::VecReferenceTooBig(_pos, _len) => write!(f, "A vec reference is too big (TODO: more debug info)."),
             Self::UnrecognizedTypeForDic(value) => write!(f, "A value for a dic is unreconized (the value is {}).", value),
             Self::UnrecognizedTypeForVec(value) => write!(f, "A value for a vec is unreconized (the value is {}).", value),
-
+            Self::Sir0WriteFooterError(_) => write!(f, "An error occured writing the sir0 header")
         }
     }
 }
@@ -62,6 +64,11 @@ impl From<io::Error> for FlowDataError {
 impl From<TryFromIntError> for FlowDataError {
     fn from(err: TryFromIntError) -> Self {
         Self::TryFromIntError(err)
+    }
+}
+impl From<Sir0WriteFooterError> for FlowDataError {
+    fn from(err: Sir0WriteFooterError) -> Self {
+        Self::Sir0WriteFooterError(err)
     }
 }
 
@@ -667,7 +674,7 @@ impl FlowData {
 
         //write pointer data
         file.seek(SeekFrom::Start(pointer_offset))?;
-        write_sir0_footer(&mut file, sir0_pointers)?;
+        write_sir0_footer(&mut file, &sir0_pointers)?;
 
         file.write_all(&[0; 14])?;
 
